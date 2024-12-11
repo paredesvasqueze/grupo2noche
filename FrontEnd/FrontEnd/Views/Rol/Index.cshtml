@@ -1,0 +1,161 @@
+﻿@model IEnumerable<Rol>
+@{
+    ViewData["Title"] = "Listado de Roles";
+    Layout = "~/Views/Shared/_LayoutDashBoard.cshtml";
+}
+
+<h2>Listado de Roles</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID Rol</th>
+            <th>Tipo de Rol</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.nIdRol</td>
+                <td>@item.cTipodeRol</td>
+                <td>
+                <td>
+                    <button class="btn btn-warning" onclick="openEditModal(@item.nIdRol, '@item.cTipodeRol')">Editar</button>
+                    <button class="btn btn-danger" onclick="deleteRol(@item.nIdRol)">Eliminar</button>
+                </td>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button class="btn btn-primary" onclick="openModal()">Nuevo</button>
+
+<!-- Modal -->
+<div class="modal fade" id="newRolModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Nuevo Rol</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="newCategoryForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="nombre">Tipo De Rol</label>
+                        <input type="text" class="form-control" id="cTipodeRol" name="cTipodeRol" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitRol()">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Modal para Editar Categoría -->
+<div class="modal fade" id="editRolModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalTitle">Editar Rol</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editRolForm">
+                <input type="hidden" id="editId" />
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editTipodeRol">Tipo de rol</label>
+                        <input type="text" class="form-control" id="editTipodeRol" name="editTipodeRol" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitEditRol()">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openModal() {
+            $('#newRolModal').modal('show');
+        }
+
+        function openEditModal(nIdRol, cTipodeRol) {
+            document.getElementById('editId').value = nIdRol;
+            document.getElementById('editTipodeRol').value = cTipodeRol;
+            $('#editRolModal').modal('show');
+        }
+
+        function submitRol() {
+            const data = {
+                cTipodeRol: document.getElementById('cTipodeRol').value
+            };
+
+            fetch('/Rol', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al crear la categoría.');
+                    }
+                });
+        }
+
+        function submitEditRol() {
+            const data = {
+                nIdRol: document.getElementById('editId').value,
+                cTipodeRol: document.getElementById('editTipodeRol').value
+            };
+
+            fetch('/Rol', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al actualizar la categoría.');
+                    }
+                });
+        }
+
+        function deleteRol(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar este Rol?")) {
+                fetch(`/Rol/${id}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('Error al eliminar la categoría.');
+                        }
+                    });
+            }
+        }
+    </script>
+}

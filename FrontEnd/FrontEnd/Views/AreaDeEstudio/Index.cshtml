@@ -1,0 +1,178 @@
+﻿@model IEnumerable<AreaDeEstudio>
+@{
+    ViewData["Title"] = "Listado de Áreas de Estudio";
+    Layout = "~/Views/Shared/_LayoutDashBoard.cshtml";
+}
+
+<h2>Listado de Áreas de Estudio</h2>
+
+<div class="container">
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <img src="@item.cImagen" class="card-img-top" alt="@item.cAreadeEstudio" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.cAreadeEstudio</h5>
+                        <p class="card-text">@item.cDescripcion</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-warning btn-sm" onclick="openEditModal('@item.nIdArea', '@item.cAreadeEstudio', '@item.cDescripcion', '@item.cImagen')">Editar</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteArea(@item.nIdArea)">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<button class="btn btn-primary mb-3" onclick="openModal()">Nueva Área</button>
+
+<!-- Modal para Crear -->
+<div class="modal fade" id="newAreaModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Nueva Área</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="newAreaForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="cAreadeEstudio">Área de Estudio</label>
+                        <input type="text" class="form-control" id="cAreadeEstudio" name="cAreadeEstudio" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cDescripcion">Descripción</label>
+                        <textarea class="form-control" id="cDescripcion" name="cDescripcion" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="cImagen">URL de la Imagen</label>
+                        <input type="text" class="form-control" id="cImagen" name="cImagen" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitArea()">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar -->
+<div class="modal fade" id="editAreaModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalTitle">Editar Área</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editAreaForm">
+                <input type="hidden" id="editId" />
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editAreadeEstudio">Área de Estudio</label>
+                        <input type="text" class="form-control" id="editAreadeEstudio" name="editAreadeEstudio" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDescripcion">Descripción</label>
+                        <textarea class="form-control" id="editDescripcion" name="editDescripcion" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editImagen">URL de la Imagen</label>
+                        <input type="text" class="form-control" id="editImagen" name="editImagen" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitEditArea()">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openModal() {
+            $('#newAreaModal').modal('show');
+        }
+
+        function openEditModal(nIdArea, cAreadeEstudio, cDescripcion, cImagen) {
+            document.getElementById('editId').value = nIdArea;
+            document.getElementById('editAreadeEstudio').value = cAreadeEstudio;
+            document.getElementById('editDescripcion').value = cDescripcion;
+            document.getElementById('editImagen').value = cImagen;
+            $('#editAreaModal').modal('show');
+        }
+
+        function submitArea() {
+            const data = {
+                cAreadeEstudio: document.getElementById('cAreadeEstudio').value,
+                cDescripcion: document.getElementById('cDescripcion').value,
+                cImagen: document.getElementById('cImagen').value
+            };
+
+            fetch('/AreaDeEstudio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al crear el área.');
+                    }
+                });
+        }
+
+        function submitEditArea() {
+            const data = {
+                nIdArea: document.getElementById('editId').value,
+                cAreadeEstudio: document.getElementById('editAreadeEstudio').value,
+                cDescripcion: document.getElementById('editDescripcion').value,
+                cImagen: document.getElementById('editImagen').value
+            };
+
+            fetch('/AreaDeEstudio', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al actualizar el área.');
+                    }
+                });
+        }
+
+        function deleteArea(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar esta Área?")) {
+                fetch(`/AreaDeEstudio/${id}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('Error al eliminar el área.');
+                        }
+                    });
+            }
+        }
+    </script>
+}
+

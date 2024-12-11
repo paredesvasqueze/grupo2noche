@@ -1,0 +1,170 @@
+﻿@model IEnumerable<Publicacion>
+@{
+    ViewData["Title"] = "Listado de Publicaciones";
+    Layout = "~/Views/Shared/_LayoutDashBoard.cshtml";
+}
+
+<h2>Listado de Publicaciones</h2>
+
+<div id="carouselExampleFade" class="carousel slide carousel-fade" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        @if (Model != null && Model.Any())
+        {
+            var first = true;
+            foreach (var item in Model)
+            {
+                <div class="carousel-item @(first ? "active" : "")">
+                    <div class="d-block w-100" style="height: 400px; background-color: #f8f9fa; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <h3>@item.cIdPublicacion</h3>
+                        <p>Tipo: @item.nTipoPublicacion</p>
+                        <p>Autor: @item.cAutor</p>
+                        <p>Fecha de Registro: @item.dFechaRegistro.ToString("dd/MM/yyyy")</p>
+                        <p>ID Área: @item.nIdArea</p>
+                        <div>
+                            <a href="/Publicacion/Detalles/@item.nIdPublicacion" class="btn btn-info btn-sm">Ver Detalles</a>
+                            <button class="btn btn-warning btn-sm" onclick="openEditModal(@item.nIdPublicacion)">Editar</button>
+                            <button class="btn btn-danger btn-sm" onclick="deletePublicacion(@item.nIdPublicacion)">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+                first = false;
+            }
+        }
+        else
+        {
+            <div class="carousel-item active">
+                <div class="text-center py-5">
+                    <p>No hay publicaciones disponibles.</p>
+                </div>
+            </div>
+        }
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<div class="mt-3">
+    <button class="btn btn-primary" onclick="openNewModal('Libro')">Nuevo Libro</button>
+    <button class="btn btn-primary" onclick="openNewModal('Articulo')">Nuevo Artículo</button>
+    <button class="btn btn-primary" onclick="openNewModal('Investigacion')">Nueva Investigación</button>
+</div>
+
+<!-- Modal para Crear Publicación -->
+<div class="modal fade" id="newPublicacionModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="newPublicacionForm">
+                <div class="modal-body">
+                    <div id="dynamicFields"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitPublicacion()">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const fieldTemplates = {
+            Libro: `
+                        <div class="mb-3">
+                            <label for="cTituloLibro" class="form-label">Título</label>
+                            <input type="text" class="form-control" id="cTituloLibro" name="cTituloLibro" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cEditorial" class="form-label">Editorial</label>
+                            <input type="text" class="form-control" id="cEditorial" name="cEditorial" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nPaginas" class="form-label">Páginas</label>
+                            <input type="number" class="form-control" id="nPaginas" name="nPaginas" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cIdioma" class="form-label">Idioma</label>
+                            <input type="text" class="form-control" id="cIdioma" name="cIdioma" required>
+                        </div>
+                    `,
+            Articulo: `
+                        <div class="mb-3">
+                            <label for="cTituloArticulo" class="form-label">Título</label>
+                            <input type="text" class="form-control" id="cTituloArticulo" name="cTituloArticulo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="dFechaArticulo" class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="dFechaArticulo" name="dFechaArticulo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cTexto" class="form-label">Texto</label>
+                            <textarea class="form-control" id="cTexto" name="cTexto" rows="3" required></textarea>
+                        </div>
+                    `,
+            Investigacion: `
+                        <div class="mb-3">
+                            <label for="cTituloInvestigacion" class="form-label">Título</label>
+                            <input type="text" class="form-control" id="cTituloInvestigacion" name="cTituloInvestigacion" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="dAnioInves" class="form-label">Año</label>
+                            <input type="date" class="form-control" id="dAnioInves" name="dAnioInves" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cInstitucion" class="form-label">Institución</label>
+                            <input type="text" class="form-control" id="cInstitucion" name="cInstitucion" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cEnlaceAcceso" class="form-label">Enlace de Acceso</label>
+                            <input type="url" class="form-control" id="cEnlaceAcceso" name="cEnlaceAcceso" required>
+                        </div>
+                    `
+        };
+
+        function openNewModal(type) {
+            document.getElementById('modalTitle').innerText = `Nueva ${type}`;
+            document.getElementById('dynamicFields').innerHTML = fieldTemplates[type];
+            new bootstrap.Modal(document.getElementById('newPublicacionModal')).show();
+        }
+
+        function submitPublicacion() {
+            const form = document.getElementById('newPublicacionForm');
+            const formData = new FormData(form);
+
+            fetch('/Publicacion/Create', {
+                method: 'POST',
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error al guardar la publicación.');
+                }
+            });
+        }
+
+        function deletePublicacion(id) {
+            if (confirm('¿Está seguro de que desea eliminar esta publicación?')) {
+                fetch(`/Publicacion/Delete/${id}`, {
+                    method: 'DELETE'
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al eliminar la publicación.');
+                    }
+                });
+            }
+        }
+    </script>
+}

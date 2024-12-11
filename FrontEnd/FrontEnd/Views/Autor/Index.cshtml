@@ -1,0 +1,181 @@
+﻿@model IEnumerable<Autor>
+@{
+    ViewData["Title"] = "Listado de Roles de Autores";
+    Layout = "~/Views/Shared/_LayoutDashBoard.cshtml";
+}
+
+<h2>Listado de Roles de Autores</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID Autor</th>
+            <th>Nombre</th>
+            <th>Nacionalidad</th>
+            <th>Especialidad</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.nIdAutor</td>
+                <td>@item.cNombre</td>
+                <td>@item.cNacionalidad</td>
+                <td>@item.cEspecialidad</td>
+                <td>
+                    <button class="btn btn-warning" onclick="openEditModal(@item.nIdAutor, '@item.cNombre', '@item.cNacionalidad', '@item.cEspecialidad')">Editar</button>
+                    <button class="btn btn-danger" onclick="deleteAutor(@item.nIdAutor)">Eliminar</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button class="btn btn-primary" onclick="openModal()">Nuevo Autor</button>
+
+<!-- Modal para Crear Autor -->
+<div class="modal fade" id="newAutorModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Nuevo Autor</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="newAutorForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="cNombre">Nombre</label>
+                        <input type="text" class="form-control" id="cNombre" name="cNombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cNacionalidad">Nacionalidad</label>
+                        <input type="text" class="form-control" id="cNacionalidad" name="cNacionalidad" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cEspecialidad">Especialidad</label>
+                        <input type="text" class="form-control" id="cEspecialidad" name="cEspecialidad" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitAutor()">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar Autor -->
+<div class="modal fade" id="editAutorModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalTitle">Editar Autor</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editAutorForm">
+                <input type="hidden" id="editIdAutor" />
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editNombre">Nombre</label>
+                        <input type="text" class="form-control" id="editNombre" name="editNombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editNacionalidad">Nacionalidad</label>
+                        <input type="text" class="form-control" id="editNacionalidad" name="editNacionalidad" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editEspecialidad">Especialidad</label>
+                        <input type="text" class="form-control" id="editEspecialidad" name="editEspecialidad" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitEditAutor()">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openModal() {
+            $('#newAutorModal').modal('show');
+        }
+
+        function openEditModal(nIdAutor, cNombre, cNacionalidad, cEspecialidad) {
+            document.getElementById('editIdAutor').value = nIdAutor;
+            document.getElementById('editNombre').value = cNombre;
+            document.getElementById('editNacionalidad').value = cNacionalidad;
+            document.getElementById('editEspecialidad').value = cEspecialidad;
+            $('#editAutorModal').modal('show');
+        }
+
+        function submitAutor() {
+            const data = {
+                cNombre: document.getElementById('cNombre').value,
+                cNacionalidad: document.getElementById('cNacionalidad').value,
+                cEspecialidad: document.getElementById('cEspecialidad').value
+            };
+
+            fetch('/Autor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error al crear el autor.');
+                }
+            });
+        }
+
+        function submitEditAutor() {
+            const data = {
+                nIdAutor: document.getElementById('editIdAutor').value,
+                cNombre: document.getElementById('editNombre').value,
+                cNacionalidad: document.getElementById('editNacionalidad').value,
+                cEspecialidad: document.getElementById('editEspecialidad').value
+            };
+
+            fetch('/Autor', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error al actualizar el autor.');
+                }
+            });
+        }
+
+        function deleteAutor(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar este autor?")) {
+                fetch(`/Autor/${id}`, {
+                    method: 'DELETE'
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al eliminar el autor.');
+                    }
+                });
+            }
+        }
+    </script>
+}
+

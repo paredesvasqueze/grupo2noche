@@ -1,0 +1,159 @@
+﻿@model IEnumerable<Genero>
+@{
+    ViewData["Title"] = "Listado de Géneros";
+    Layout = "~/Views/Shared/_LayoutDashBoard.cshtml";
+}
+
+<h2>Listado de Géneros</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID Género</th>
+            <th>Tipo de Género</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.nIdGenero</td>
+                <td>@item.cTipoGenero</td>
+                <td>
+                    <button class="btn btn-warning" onclick="openEditModal(@item.nIdGenero, '@item.cTipoGenero')">Editar</button>
+                    <button class="btn btn-danger" onclick="deleteGenero(@item.nIdGenero)">Eliminar</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button class="btn btn-primary" onclick="openModal()">Nuevo</button>
+
+<!-- Modal para Nuevo Género -->
+<div class="modal fade" id="newGeneroModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Nuevo Género</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="newGeneroForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="cTipoGenero">Tipo de Género</label>
+                        <input type="text" class="form-control" id="cTipoGenero" name="cTipoGenero" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitGenero()">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar Género -->
+<div class="modal fade" id="editGeneroModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalTitle">Editar Género</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editGeneroForm">
+                <input type="hidden" id="editId" />
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editTipoGenero">Tipo de Género</label>
+                        <input type="text" class="form-control" id="editTipoGenero" name="editTipoGenero" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitEditGenero()">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openModal() {
+            $('#newGeneroModal').modal('show');
+        }
+
+        function openEditModal(nIdGenero, cTipoGenero) {
+            document.getElementById('editId').value = nIdGenero;
+            document.getElementById('editTipoGenero').value = cTipoGenero;
+            $('#editGeneroModal').modal('show');
+        }
+
+        function submitGenero() {
+            const data = {
+                cTipoGenero: document.getElementById('cTipoGenero').value
+            };
+
+            fetch('/Genero', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al crear el género.');
+                    }
+                });
+        }
+
+        function submitEditGenero() {
+            const data = {
+                nIdGenero: document.getElementById('editId').value,
+                cTipoGenero: document.getElementById('editTipoGenero').value
+            };
+
+            fetch('/Genero', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al actualizar el género.');
+                    }
+                });
+        }
+
+        function deleteGenero(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar este género?")) {
+                fetch(`/Genero/${id}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('Error al eliminar el género.');
+                        }
+                    });
+            }
+        }
+    </script>
+}
+
+
